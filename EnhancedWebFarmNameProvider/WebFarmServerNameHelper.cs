@@ -1,26 +1,19 @@
-﻿// TODO: Verify WEBSITE_INSTANCE_ID is slot specific -- No. WEBSITE_INSTANCE_ID is the same across slots.
-// WEBSITE_SITE_NAME is also not slot specific.
-//
-// WEBSITE_IIS_SITE_NAME is slot specific
-// echo %WEBSITE_IIS_SITE_NAME%
-// ~1starterkit-cms-dev-2022__7fa7
-// echo %WEBSITE_IIS_SITE_NAME%
-// ~1starterkit-cms-dev-202
-
-
+﻿using CMS;
 using CMS.Base;
 using CMS.Core;
 using Microsoft.Extensions.Hosting;
 using System;
+using XperienceCommunity.EnhancedWebFarmNameProvider;
+
+[assembly: RegisterImplementation(typeof(IWebFarmServerNameHelper), typeof(WebFarmServerNameHelper))]
 
 namespace XperienceCommunity.EnhancedWebFarmNameProvider
 {
     public class WebFarmServerNameHelper : IWebFarmServerNameHelper
     {
-        private const string WEBSITE_SITE_NAME_ENV_VARIABLE = "WEBSITE_SITE_NAME";
-        private const string WEBSITE_INSTANCE_ID_ENV_VARIABLE = "WEBSITE_INSTANCE_ID";
-        private const string AUTO_EXTERNAL_WEBAPP_SUFFIX = "AutoExternalWeb";
-        private const string INSTANCE_NAME_SUFFIX_CONFIG_KEY = "CMSInstanceNameSuffix";
+        private const string AZURE_WEBSITE_DEPLOYMENT_ID_ENV_VARIABLE = "WEBSITE_DEPLOYMENT_ID";
+        private const string KENTICO_AUTO_EXTERNAL_WEBAPP_SUFFIX = "AutoExternalWeb";
+        private const string KENTICO_INSTANCE_NAME_SUFFIX_CONFIG_KEY = "CMSInstanceNameSuffix";
 
         private readonly IHostEnvironment _hostEnvironment;
         private readonly IConversionService _conversionService;
@@ -53,14 +46,89 @@ namespace XperienceCommunity.EnhancedWebFarmNameProvider
         /// <remarks>Based on work provided by Brandon Henricks (https://github.com/brandonhenricks)</remarks>
         public string GetAutomaticWebFarmServerName()
         {
-            var websiteName = Environment.GetEnvironmentVariable(WEBSITE_SITE_NAME_ENV_VARIABLE, EnvironmentVariableTarget.Process);
-            var instanceName = Environment.GetEnvironmentVariable(WEBSITE_INSTANCE_ID_ENV_VARIABLE, EnvironmentVariableTarget.Process);
-
-            if(!string.IsNullOrWhiteSpace(websiteName) && !string.IsNullOrWhiteSpace(instanceName))
+            var azureWebFarmServerName = GetAzureBasedWebFarmServerName();
+            if(!string.IsNullOrWhiteSpace(azureWebFarmServerName))
             {
-                return $"{websiteName}_{instanceName}";
+                return azureWebFarmServerName + GetInstanceNameSuffix();
+            }
+            var iisBasedWebFarmServerName = GetIisBasedWebFarmServerName(); 
+            if(!string.IsNullOrWhiteSpace(iisBasedWebFarmServerName))
+            {
+                return iisBasedWebFarmServerName + GetInstanceNameSuffix();
             }
             return _conversionService.GetCodeName(SystemContext.MachineName + SystemContext.ApplicationPath) + GetInstanceNameSuffix();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>
+        /// Test of echo %WEBSITE_IIS_SITE_NAME%_%COMPUTERNAME%
+        ///    Prod Instance 9965: ~1starterkit-cms-dev-2022_DW1SDWK0000B8
+        ///    Prod Instance c364: ~1starterkit-cms-dev-2022_dw1sdwk0000DO
+        ///    Slot Instance 9965: ~1starterkit-cms-dev-2022__7fa7_DW1SDWK0000B8
+        ///    Slot Instance c364: ~1starterkit-cms-dev-2022__7fa7_dw1sdwk0000DO
+        /// WEBSITE_IIS_SITE_NAME is deprecated.
+        /// Readable. Unique. Doesn't stick to instance.
+        /// 
+        /// Test of echo %WEBSITE_SITE_NAME%_%WEBSITE_INSTANCE_ID%
+        ///     Prod Instance: starterkit-com-dev-2022_7bba8ff75d917e04579ec0c572755b5f34ebcf565d04592f367d277648232dd6
+        ///     Slot Instance: starterkit-com-dev-2022_7bba8ff75d917e04579ec0c572755b5f34ebcf565d04592f367d277648232dd6
+        /// Not unique. Not readable.
+        /// 
+        /// Test of echo %WEBSITE_DEPLOYMENT_ID%
+        /// Live: bluemodus-com-prod-2023
+        /// Slot: bluemodus-com-prod-2023__ba52
+        /// 
+        /// Readable, unique, but doesn't stick to instance. 
+        /// 
+        /// </remarks>
+        public string GetAzureBasedWebFarmServerName()
+        {
+            var deploymentId = Environment.GetEnvironmentVariable(AZURE_WEBSITE_DEPLOYMENT_ID_ENV_VARIABLE, EnvironmentVariableTarget.Process);
+
+            if (string.IsNullOrWhiteSpace(deploymentId))
+            {
+                return string.Empty;
+            }
+            return deploymentId;
+        }
+
+        /// <summary>
+        /// Create a unique name for the web farm server based on the IIS website ApplicationID
+        /// and computer name.
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>
+        /// .NET Framwork, HostingEnvironment
+        /// ApplicationID = /LM/W3SVC/1/ROOT/kx13-dancing-goat-sample_Admin
+        /// COMPUTERNAME = BLUEL-1459
+        /// 
+        /// .NET Core, ApplicationName
+        /// DancingGoatCore
+        /// BlueModus.Xp13StarterKit.Web
+        /// </remarks>
+        public string GetIisBasedWebFarmServerName()
+        {
+            var computerName = SystemContext.MachineName;
+#if NETFRAMEWORK
+            var applicationId = HostingEnvironment.ApplicationID;
+            if(string.IsNullOrWhiteSpace(applicationId))
+            {
+                return string.Empty;
+            }
+            var cleanApplicationId = applicationId.Replace("/LM/W3SVC/", string.Empty)
+                                                  .Replace("/", "-");
+            return $"{computerName}_{cleanApplicationId}";
+#else
+            var applicationName = _hostEnvironment.ApplicationName;
+            if(string.IsNullOrWhiteSpace(applicationName))
+            {
+                return string.Empty;
+            }   
+            return $"{computerName}_{applicationName}";
+#endif
         }
 
         /// <summary>
@@ -73,11 +141,11 @@ namespace XperienceCommunity.EnhancedWebFarmNameProvider
         public string GetInstanceNameSuffix()
         {
             var instanceNameSuffix = String.Empty;
-            var customInstancenameSuffix = Convert.ToString(_appSettingsService[INSTANCE_NAME_SUFFIX_CONFIG_KEY]);
+            var customInstancenameSuffix = Convert.ToString(_appSettingsService[KENTICO_INSTANCE_NAME_SUFFIX_CONFIG_KEY]);
 
             if (!SystemContext.IsCMSRunningAsMainApplication && SystemContext.IsWebSite && customInstancenameSuffix == null)
             {
-                customInstancenameSuffix = AUTO_EXTERNAL_WEBAPP_SUFFIX;
+                customInstancenameSuffix = KENTICO_AUTO_EXTERNAL_WEBAPP_SUFFIX;
             }
 
             if (!String.IsNullOrEmpty(customInstancenameSuffix))
