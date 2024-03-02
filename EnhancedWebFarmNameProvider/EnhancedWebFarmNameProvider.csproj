@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net6.0;net48</TargetFrameworks>
     <RootNamespace>XperienceCommunity.EnhancedWebFarmNameProvider</RootNamespace>
+    <AssemblyName>XperienceCommunity.EnhancedWebFarmNameProvider</AssemblyName>
   </PropertyGroup>
   
   <!-- For how to include Target-Framework-Specific classes see:
@@ -33,10 +34,13 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Web" />
   </ItemGroup>  
+  
+  <ItemGroup>
+    <None Remove="HostSpecificHelpers\NetCore\ConfigurationHelper.cs" />
+  </ItemGroup>  
     
   <ItemGroup>
     <PackageReference Include="Kentico.Xperience.Libraries" Version="13.0.13" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
   </ItemGroup>
 
 </Project>

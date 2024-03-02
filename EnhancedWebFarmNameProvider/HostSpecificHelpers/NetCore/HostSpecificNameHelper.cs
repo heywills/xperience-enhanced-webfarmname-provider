@@ -2,6 +2,7 @@
 using CMS.Base;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using System.Collections.Generic;
 using System.Linq;
 using XperienceCommunity.EnhancedWebFarmNameProvider;
 using XperienceCommunity.EnhancedWebFarmNameProvider.HostSpecificHelpers.NetCore;
@@ -39,6 +40,7 @@ namespace XperienceCommunity.EnhancedWebFarmNameProvider.HostSpecificHelpers.Net
         public string GetUniqueInstanceName()
         {
             var computerName = SystemContext.MachineName;
+            // TODO: addresses is null when hosted in IIS. We need another way to get a unique name.
             var addresses = _server.Features.Get<IServerAddressesFeature>().Addresses;
             if(addresses == null || !addresses.Any())
             {

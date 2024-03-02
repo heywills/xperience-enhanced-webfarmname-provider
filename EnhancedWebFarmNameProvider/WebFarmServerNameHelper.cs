@@ -15,15 +15,15 @@ namespace XperienceCommunity.EnhancedWebFarmNameProvider
         private const string KENTICO_INSTANCE_NAME_SUFFIX_CONFIG_KEY = "CMSInstanceNameSuffix";
 
         private readonly IConversionService _conversionService;
-        private readonly IAppSettingsService _appSettingsService;
+        private readonly IConfigurationHelper _configurationHelper;
         private readonly IHostSpecificNameHelper _hostSpecificNameHelper;
 
         public WebFarmServerNameHelper(IConversionService conversionService,
-                                       IAppSettingsService appSettingsService,
+                                       IConfigurationHelper configurationHelper,
                                        IHostSpecificNameHelper hostSpecificNameHelper)
         {
             _conversionService = conversionService;
-            _appSettingsService = appSettingsService;
+            _configurationHelper = configurationHelper;
             _hostSpecificNameHelper = hostSpecificNameHelper;
         }
 
@@ -102,7 +102,7 @@ namespace XperienceCommunity.EnhancedWebFarmNameProvider
         public string GetInstanceNameSuffix()
         {
             var instanceNameSuffix = String.Empty;
-            var customInstancenameSuffix = Convert.ToString(_appSettingsService[KENTICO_INSTANCE_NAME_SUFFIX_CONFIG_KEY]);
+            var customInstancenameSuffix = Convert.ToString(_configurationHelper[KENTICO_INSTANCE_NAME_SUFFIX_CONFIG_KEY]);
 
             if (!SystemContext.IsCMSRunningAsMainApplication && SystemContext.IsWebSite && customInstancenameSuffix == null)
             {
