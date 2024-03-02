@@ -1,7 +1,6 @@
 ﻿using CMS;
 using CMS.Base;
 using CMS.Core;
-using Microsoft.Extensions.Hosting;
 using System;
 using XperienceCommunity.EnhancedWebFarmNameProvider;
 
@@ -15,17 +14,17 @@ namespace XperienceCommunity.EnhancedWebFarmNameProvider
         private const string KENTICO_AUTO_EXTERNAL_WEBAPP_SUFFIX = "AutoExternalWeb";
         private const string KENTICO_INSTANCE_NAME_SUFFIX_CONFIG_KEY = "CMSInstanceNameSuffix";
 
-        private readonly IHostEnvironment _hostEnvironment;
         private readonly IConversionService _conversionService;
         private readonly IAppSettingsService _appSettingsService;
+        private readonly IHostSpecificNameHelper _hostSpecificNameHelper;
 
-        public WebFarmServerNameHelper(IHostEnvironment hostEnvironment,
-                                       IConversionService conversionService,
-                                       IAppSettingsService appSettingsService)
+        public WebFarmServerNameHelper(IConversionService conversionService,
+                                       IAppSettingsService appSettingsService,
+                                       IHostSpecificNameHelper hostSpecificNameHelper)
         {
-            _hostEnvironment = hostEnvironment;
             _conversionService = conversionService;
             _appSettingsService = appSettingsService;
+            _hostSpecificNameHelper = hostSpecificNameHelper;
         }
 
         /// <summary>
@@ -39,8 +38,6 @@ namespace XperienceCommunity.EnhancedWebFarmNameProvider
         /// <item><description> Running multiple IIS websites on the same server without different 
         ///                     virtual directories (e.g., using port or host name binding).</description></item>
         /// </list>
-        /// <para>Additoinally, this enhancement provides web farm server names based on 
-        /// Azure App Services names which are easier for admins to audit.</para>
         /// </summary>
         /// <returns><c>String Representation of the Server Name</c></returns>
         /// <remarks>Based on work provided by Brandon Henricks (https://github.com/brandonhenricks)</remarks>
@@ -51,16 +48,16 @@ namespace XperienceCommunity.EnhancedWebFarmNameProvider
             {
                 return azureWebFarmServerName + GetInstanceNameSuffix();
             }
-            var iisBasedWebFarmServerName = GetIisBasedWebFarmServerName(); 
-            if(!string.IsNullOrWhiteSpace(iisBasedWebFarmServerName))
+            var hostSpecificWebFarmServerName = _hostSpecificNameHelper.GetUniqueInstanceName(); 
+            if(!string.IsNullOrWhiteSpace(hostSpecificWebFarmServerName))
             {
-                return iisBasedWebFarmServerName + GetInstanceNameSuffix();
+                return hostSpecificWebFarmServerName + GetInstanceNameSuffix();
             }
             return _conversionService.GetCodeName(SystemContext.MachineName + SystemContext.ApplicationPath) + GetInstanceNameSuffix();
         }
 
         /// <summary>
-        /// 
+        /// Get a unique web farm server name based on Azure environment variable, WEBSITE_DEPLOYMENT_ID
         /// </summary>
         /// <returns></returns>
         /// <remarks>
@@ -93,42 +90,6 @@ namespace XperienceCommunity.EnhancedWebFarmNameProvider
                 return string.Empty;
             }
             return deploymentId;
-        }
-
-        /// <summary>
-        /// Create a unique name for the web farm server based on the IIS website ApplicationID
-        /// and computer name.
-        /// </summary>
-        /// <returns></returns>
-        /// <remarks>
-        /// .NET Framwork, HostingEnvironment
-        /// ApplicationID = /LM/W3SVC/1/ROOT/kx13-dancing-goat-sample_Admin
-        /// COMPUTERNAME = BLUEL-1459
-        /// 
-        /// .NET Core, ApplicationName
-        /// DancingGoatCore
-        /// BlueModus.Xp13StarterKit.Web
-        /// </remarks>
-        public string GetIisBasedWebFarmServerName()
-        {
-            var computerName = SystemContext.MachineName;
-#if NETFRAMEWORK
-            var applicationId = HostingEnvironment.ApplicationID;
-            if(string.IsNullOrWhiteSpace(applicationId))
-            {
-                return string.Empty;
-            }
-            var cleanApplicationId = applicationId.Replace("/LM/W3SVC/", string.Empty)
-                                                  .Replace("/", "-");
-            return $"{computerName}_{cleanApplicationId}";
-#else
-            var applicationName = _hostEnvironment.ApplicationName;
-            if(string.IsNullOrWhiteSpace(applicationName))
-            {
-                return string.Empty;
-            }   
-            return $"{computerName}_{applicationName}";
-#endif
         }
 
         /// <summary>

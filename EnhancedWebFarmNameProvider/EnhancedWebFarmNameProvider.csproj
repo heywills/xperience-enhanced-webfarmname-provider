@@ -1,10 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net48</TargetFrameworks>
     <RootNamespace>XperienceCommunity.EnhancedWebFarmNameProvider</RootNamespace>
   </PropertyGroup>
+  
+  <!-- For how to include Target-Framework-Specific classes see:
+       https://mcguirev10.com/2018/04/09/working-with-multitarget-solutions.html
+  -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <NetCore>True</NetCore>
+  </PropertyGroup>
 
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net48'">
+    <NetFramework>True</NetFramework>
+  </PropertyGroup>
+  <!--By default, don't include contents of HostSpecificHelpers -->
+  <ItemGroup>
+    <Compile Remove="HostSpecificHelpers\**\*.*" />
+    <None Include="HostSpecificHelpers\**\*.*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(NetCore)' == 'True'">
+    <Folder Include="\NetCore\" />
+    <Compile Include="HostSpecificHelpers\NetCore\*.cs" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>  
+  
+  <ItemGroup Condition="'$(NetFramework)' == 'True'">
+    <Folder Include="\NetFramework\" />
+    <Compile Include="HostSpecificHelpers\NetFramework\*.cs" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Web" />
+  </ItemGroup>  
+    
   <ItemGroup>
     <PackageReference Include="Kentico.Xperience.Libraries" Version="13.0.13" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />

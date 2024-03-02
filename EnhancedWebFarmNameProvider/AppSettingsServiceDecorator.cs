@@ -3,11 +3,13 @@ using CMS.Core;
 using System;
 using XperienceCommunity.EnhancedWebFarmNameProvider;
 
-[assembly:AssemblyDiscoverable]
 [assembly: RegisterImplementation(typeof(IAppSettingsService), typeof(AppSettingsServiceDecorator))]
 
 namespace XperienceCommunity.EnhancedWebFarmNameProvider
 {
+    /// <summary>
+    /// Decorate the IAppSettingsService to override the CMSWebFarmServerName
+    /// </summary>
     public class AppSettingsServiceDecorator : IAppSettingsService
     {
         private const string KENTICO_CONFIG_CMSWEBFARMSERVERNAME = "CMSWebFarmServerName";
@@ -20,6 +22,12 @@ namespace XperienceCommunity.EnhancedWebFarmNameProvider
             _appSettingsService = appSettingsService;
             _webFarmServerNameHelper = webFarmServerNameHelper;
         }
+
+        /// <summary>
+        /// Get the app setting value. Override the CMSWebFarmServerName if it is empty.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public string this[string key] 
         { 
             get
