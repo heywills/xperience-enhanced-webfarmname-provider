@@ -38,7 +38,8 @@ namespace XperienceCommunity.EnhancedWebFarmNameProvider.HostSpecificHelpers.Net
                 return string.Empty;
             }
             var cleanApplicationId = applicationId.Replace("/LM/W3SVC/", string.Empty)
-                                                  .Replace("/", "-");
+                                                  .Replace("/", "-")
+                                                  .ToLowerInvariant();
             if (string.IsNullOrWhiteSpace(cleanApplicationId))
             {
                 return string.Empty;

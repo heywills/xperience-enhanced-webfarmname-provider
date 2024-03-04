@@ -51,7 +51,8 @@ namespace XperienceCommunity.EnhancedWebFarmNameProvider.HostSpecificHelpers.Net
                                                  .Replace("http://", string.Empty)
                                                  .Replace("https://", string.Empty)
                                                  .Replace(":", "_")
-                                                 .Replace("/", "-");
+                                                 .Replace("/", "-")
+                                                 .ToLowerInvariant();
             if (string.IsNullOrWhiteSpace(cleanApplicationId))
             {
                 return string.Empty;

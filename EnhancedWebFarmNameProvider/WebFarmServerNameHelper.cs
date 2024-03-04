@@ -74,11 +74,12 @@ namespace XperienceCommunity.EnhancedWebFarmNameProvider
         ///     Slot Instance: starterkit-com-dev-2022_7bba8ff75d917e04579ec0c572755b5f34ebcf565d04592f367d277648232dd6
         /// Not unique. Not readable.
         /// 
-        /// Test of echo %WEBSITE_DEPLOYMENT_ID%
-        /// Live: bluemodus-com-prod-2023
-        /// Slot: bluemodus-com-prod-2023__ba52
+        /// Test of echo %COMPUTERNAME%_%WEBSITE_DEPLOYMENT_ID%
+        /// Live: DW1SDWK0000B8_bluemodus-com-prod-2023
+        /// Slot: DW1SDWK0000B8_bluemodus-com-prod-2023__ba52
         /// 
-        /// Readable, unique, but doesn't stick to instance. 
+        /// Readable, unique (including with mulitple scaled-up instances)
+        /// but doesn't stick to slot instance. 
         /// 
         /// </remarks>
         public string GetAzureBasedWebFarmServerName()
@@ -89,7 +90,8 @@ namespace XperienceCommunity.EnhancedWebFarmNameProvider
             {
                 return string.Empty;
             }
-            return deploymentId;
+            var computerName = SystemContext.MachineName;
+            return $"{computerName}_{deploymentId}";
         }
 
         /// <summary>
