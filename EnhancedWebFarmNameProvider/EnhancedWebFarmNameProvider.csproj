@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net8.0;net48</TargetFrameworks>
+    <RootNamespace>XperienceCommunity.EnhancedWebFarmNameProvider</RootNamespace>
+    <AssemblyName>XperienceCommunity.EnhancedWebFarmNameProvider</AssemblyName>
+    <Authors>Kentico Xperience Community</Authors>
+    <PackageProjectUrl>https://github.com/heywills/xperience-enhanced-webfarmname-provider</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/heywills/xperience-enhanced-webfarmname-provider</RepositoryUrl>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageIconUrl />
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>Kentico Xperience Azure Autoscaling Auto-Scaling Web Farms</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Copyright>Copyright ©  2024</Copyright>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
+  </PropertyGroup>
+  
+  <!-- For how to include Target-Framework-Specific classes see:
+       https://mcguirev10.com/2018/04/09/working-with-multitarget-solutions.html
+  -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net8.0'">
+    <NetCore>True</NetCore>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net48'">
+    <NetFramework>True</NetFramework>
+  </PropertyGroup>
+  <!--By default, don't include contents of HostSpecificHelpers -->
+  <ItemGroup>
+    <Compile Remove="HostSpecificHelpers\**\*.*" />
+    <None Include="HostSpecificHelpers\**\*.*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(NetCore)' == 'True'">
+    <Folder Include="\NetCore\" />
+    <Compile Include="HostSpecificHelpers\NetCore\*.cs" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>  
+  
+  <ItemGroup Condition="'$(NetFramework)' == 'True'">
+    <Folder Include="\NetFramework\" />
+    <Compile Include="HostSpecificHelpers\NetFramework\*.cs" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Web" />
+  </ItemGroup>  
+  
+  <ItemGroup>
+    <None Remove="HostSpecificHelpers\NetCore\ConfigurationHelper.cs" />
+  </ItemGroup>  
+    
+  <ItemGroup>
+    <PackageReference Include="Kentico.Xperience.Libraries" Version="13.0.13" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".\images\icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
