@@ -67,16 +67,16 @@ Here's a few screenshots showing what the web farm server names will look like i
 
 **Web farm names in local environment, using IIS, Kestrel, and IIS virtual root**
 
-![Web farm names in local environment, using IIS, Kestrel, and IIS virtual root](./docs/images/IIS-kestrel-vroot.png)
+![Web farm names in local environment, using IIS, Kestrel, and IIS virtual root](https://raw.githubusercontent.com/heywills/xperience-enhanced-webfarmname-provider/main/docs/images/IIS-kestrel-vroot.png)
 
 **Web farm names in Azure, using scale out and deployment slots**
 
-![Web farm names in Azure, using scale out and deployment slots](./docs/images/azure-scaled-out-deployment-slot.png)
+![Web farm names in Azure, using scale out and deployment slots](https://raw.githubusercontent.com/heywills/xperience-enhanced-webfarmname-provider/main/docs/images/azure-scaled-out-deployment-slot.png)
 
 
 **Web farm names in Azure, using scale out and multiple app services with separate custom domains**
 
-![Web farm names in Azure, using scale out and multiple app services with separate custom domains](./docs/images/azure-multiple-branded-sites.png)
+![Web farm names in Azure, using scale out and multiple app services with separate custom domains](https://raw.githubusercontent.com/heywills/xperience-enhanced-webfarmname-provider/main/docs/images/azure-multiple-branded-sites.png)
 
 And, here's a summary of the scenarios tested and examples of the automatic web farm names:
 
