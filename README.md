@@ -105,7 +105,7 @@ And, here's a summary of the scenarios tested and examples of the automatic web 
 
 ## Credit
 
-Sincere thanks to [Brandon Henricks](https://github.com/brandonhenricks) and [David Rector](https://www.linkedin.com/in/davidarector), for helping me research and test this solution.
+Sincere thanks to [Brandon Henricks](https://github.com/brandonhenricks) and [David Rector](https://www.linkedin.com/in/davidarector) at [BlueModus](https://bluemodus.com/), for helping me research and test this solution.
 
 ## License
 
